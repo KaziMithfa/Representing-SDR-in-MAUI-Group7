@@ -1,0 +1,1 @@
+D:\MauiApp\Contacts\Contacts.Maui\Contacts.Maui.csproj;x64
