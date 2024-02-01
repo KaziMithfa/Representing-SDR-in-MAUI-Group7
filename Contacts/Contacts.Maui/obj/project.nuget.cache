@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "qSja+/ze6EKRL7HtuB9BnhWByHpbfh/dqsdYjP2xK/bzMDK4FiUefovqXuy0JnvcOkyV//PNAwkcBbCj9rgKog==",
+  "dgSpecHash": "n6ecnuAigOFm2Tms3+EQSSLyr8y4L7TtW7CTz2k5CylSPnau6d4JRIDBCU0WI4esAw1+zvLQOJYJx5ydbDsBKw==",
   "success": true,
-  "projectFilePath": "D:\\MauiApp\\Contacts\\Contacts.Maui\\Contacts.Maui.csproj",
+  "projectFilePath": "D:\\MauiApp\\Representing-SDR-in-MAUI-Group7\\Contacts\\Contacts.Maui\\Contacts.Maui.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\mehej\\.nuget\\packages\\googlegson\\2.10.1.4\\googlegson.2.10.1.4.nupkg.sha512",
     "C:\\Users\\mehej\\.nuget\\packages\\microsoft.extensions.configuration\\8.0.0\\microsoft.extensions.configuration.8.0.0.nupkg.sha512",

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\MauiApp\\Contacts\\Contacts.Maui\\Contacts.Maui.csproj": {}
+    "D:\\MauiApp\\Representing-SDR-in-MAUI-Group7\\Contacts\\Contacts.Maui\\Contacts.Maui.csproj": {}
   },
   "projects": {
-    "D:\\MauiApp\\Contacts\\Contacts.Maui\\Contacts.Maui.csproj": {
+    "D:\\MauiApp\\Representing-SDR-in-MAUI-Group7\\Contacts\\Contacts.Maui\\Contacts.Maui.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\MauiApp\\Contacts\\Contacts.Maui\\Contacts.Maui.csproj",
+        "projectUniqueName": "D:\\MauiApp\\Representing-SDR-in-MAUI-Group7\\Contacts\\Contacts.Maui\\Contacts.Maui.csproj",
         "projectName": "Contacts.Maui",
-        "projectPath": "D:\\MauiApp\\Contacts\\Contacts.Maui\\Contacts.Maui.csproj",
+        "projectPath": "D:\\MauiApp\\Representing-SDR-in-MAUI-Group7\\Contacts\\Contacts.Maui\\Contacts.Maui.csproj",
         "packagesPath": "C:\\Users\\mehej\\.nuget\\packages\\",
-        "outputPath": "D:\\MauiApp\\Contacts\\Contacts.Maui\\obj\\",
+        "outputPath": "D:\\MauiApp\\Representing-SDR-in-MAUI-Group7\\Contacts\\Contacts.Maui\\obj\\",
         "projectStyle": "PackageReference",
         "crossTargeting": true,
         "fallbackFolders": [
