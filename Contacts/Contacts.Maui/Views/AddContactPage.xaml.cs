@@ -9,6 +9,6 @@ public partial class AddContactPage : ContentPage
 
     private void btnCancel_Clicked(object sender, EventArgs e)
     {
-        Shell.Current.GoToAsync("..");
+        Shell.Current.GoToAsync($"//{nameof(ContactsPage)}");
     }
 }
