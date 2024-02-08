@@ -7,6 +7,12 @@
               BackgroundColor="Transparent"
               SeparatorColor="Silver"
               >
+        <ListView.ItemTemplate>
+            <DataTemplate>
+                <TextCell Text="{Binding Name}"
+                          Detail="{Binding Email}"></TextCell>
+            </DataTemplate>
+        </ListView.ItemTemplate>
         
     </ListView>
 </ContentPage>
