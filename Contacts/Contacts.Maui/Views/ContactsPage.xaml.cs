@@ -18,12 +18,6 @@ public partial class ContactsPage : ContentPage
         listContacts.ItemsSource = contacts;
     }
 
-    public class Contact
-    {
-        public string Name { get; set; }
-        public string Email { get; set; }
-    }
-
     private async void listContacts_ItemSelected(object sender, SelectedItemChangedEventArgs e)
     {
         if (listContacts.SelectedItem != null)
