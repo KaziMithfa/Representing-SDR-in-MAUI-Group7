@@ -9,6 +9,33 @@ namespace MauiApp1
 {
     public class SDR
     {
+        List<List<int>> ReadDataFromCsv(string filename)
+        {
+            var dataSets = new List<List<int>>();
+            using (var reader = new StreamReader(filename))
+            {
+                while (!reader.EndOfStream)
+                {
+                    var line = reader.ReadLine();
+                    var values = line.Split(',');
+                    var dataSet = new List<int>();
+
+                    foreach (var value in values)
+                    {
+                        if (int.TryParse(value, out int result))
+                        {
+                            dataSet.Add(result);
+                        }
+                    }
+
+                    if (dataSet.Count > 0)
+                    {
+                        dataSets.Add(dataSet);
+                    }
+                }
+            }
+            return dataSets;
+        }
         void PlotActivityVertically(List<List<int>> dataSets, int highlightTouch, int maxCell, int minCell)
         {
             int width = 800;
