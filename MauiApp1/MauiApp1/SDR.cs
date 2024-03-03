@@ -9,6 +9,69 @@ namespace MauiApp1
 {
     public class SDR
     {
+        public int MaxCycles { get; set; } = 10;
+        public string GraphName { get; set; } = "ActivityGraph";
+        public SKPaint ActiveCellPaint { get; set; } = new SKPaint { Color = SKColors.Purple, StrokeWidth = 2 };
+        public SKPaint HighlightPaint { get; set; } = new SKPaint { Color = SKColors.Red.WithAlpha(128), StrokeWidth = 3 };
+        public string SubPlotTitle { get; set; } = "Column 1";
+        public string XAxisTitle { get; set; } = "Number of Touches";
+        public string YAxisTitle { get; set; } = "Neuron #";
+        public int MinCell { get; set; } = -100;
+        public int MaxCell { get; set; } = 4200;
+
+        void Main(string[] args)
+        {
+            // Reading input from user
+            Console.WriteLine("Enter the filename (including path):");
+            string filename = Console.ReadLine();
+
+            Console.WriteLine("Enter the graph name:");
+            string graphName = Console.ReadLine();
+
+            Console.WriteLine("Enter the number of maximum cycles:");
+            int maxCycles = int.Parse(Console.ReadLine());
+
+            Console.WriteLine("Enter the number of highlight touches:");
+            int highlightTouch = int.Parse(Console.ReadLine());
+
+            Console.WriteLine("Enter the title of the y-axis:");
+            string yAxisTitle = Console.ReadLine();
+
+            Console.WriteLine("Enter the title of the x-axis:");
+            string xAxisTitle = Console.ReadLine();
+
+            Console.WriteLine("Enter the title of the subplot:");
+            string subPlotTitle = Console.ReadLine();
+
+            Console.WriteLine("Enter the name of the figure:");
+            string figureName = Console.ReadLine();
+
+            Console.WriteLine("Enter 'x' to plot horizontally, any other key for vertical:");
+            string axis = Console.ReadLine();
+
+            Console.WriteLine("Enter the minimum range of the cells (optional, press Enter to skip):");
+            string minCellInput = Console.ReadLine();
+            int? minCellRange = string.IsNullOrEmpty(minCellInput) ? (int?)null : int.Parse(minCellInput);
+
+            Console.WriteLine("Enter the maximum range of the cells (optional, press Enter to skip):");
+            string maxCellInput = Console.ReadLine();
+            int? maxCellRange = string.IsNullOrEmpty(maxCellInput) ? (int?)null : int.Parse(maxCellInput);
+
+            var dataSets = ReadDataFromCsv(filename);
+
+            var maxCell = maxCellRange ?? dataSets.Max(set => set.Max()) + 100;
+            var minCell = minCellRange ?? dataSets.Min(set => set.Min()) - 100;
+
+            // Plotting
+            if (axis.ToLower() == "x")
+            {
+                PlotActivityHorizontally(dataSets, highlightTouch, maxCell, minCell);
+            }
+            else
+            {
+                PlotActivityVertically(dataSets, highlightTouch, maxCell, minCell);
+            }
+        }
         List<List<int>> ReadDataFromCsv(string filename)
         {
             var dataSets = new List<List<int>>();
