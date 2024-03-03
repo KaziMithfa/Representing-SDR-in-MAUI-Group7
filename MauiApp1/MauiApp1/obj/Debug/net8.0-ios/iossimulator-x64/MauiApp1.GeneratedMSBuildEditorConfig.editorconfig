@@ -13,72 +13,79 @@ build_property.EnforceExtendedAnalyzerRules =
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = MauiApp1
 build_property.RootNamespace = MauiApp1
-build_property.ProjectDir = D:\SE_project_live\MauiApp1\MauiApp1\
+build_property.ProjectDir = D:\SE_Project_MAUI_Live\MauiApp1\MauiApp1\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 8.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = D:\SE_project_live\MauiApp1\MauiApp1
+build_property.MSBuildProjectDirectory = D:\SE_Project_MAUI_Live\MauiApp1\MauiApp1
 build_property._RazorSourceGeneratorDebug = 
 
-[D:/SE_project_live/MauiApp1/MauiApp1/App.xaml]
+[D:/SE_Project_MAUI_Live/MauiApp1/MauiApp1/App.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = MauiApp1.App.xaml
 build_metadata.AdditionalFiles.TargetPath = App.xaml
 build_metadata.AdditionalFiles.RelativePath = App.xaml
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/SE_project_live/MauiApp1/MauiApp1/MainPage.xaml]
+[D:/SE_Project_MAUI_Live/MauiApp1/MauiApp1/MainPage.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = MauiApp1.MainPage.xaml
 build_metadata.AdditionalFiles.TargetPath = MainPage.xaml
 build_metadata.AdditionalFiles.RelativePath = MainPage.xaml
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/SE_project_live/MauiApp1/MauiApp1/Components/Pages/Counter.razor]
+[D:/SE_Project_MAUI_Live/MauiApp1/MauiApp1/Components/Pages/Contact.razor]
+build_metadata.AdditionalFiles.GenKind = 
+build_metadata.AdditionalFiles.ManifestResourceName = 
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDb250YWN0LnJhem9y
+build_metadata.AdditionalFiles.RelativePath = 
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/SE_Project_MAUI_Live/MauiApp1/MauiApp1/Components/Pages/Counter.razor]
 build_metadata.AdditionalFiles.GenKind = 
 build_metadata.AdditionalFiles.ManifestResourceName = 
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDb3VudGVyLnJhem9y
 build_metadata.AdditionalFiles.RelativePath = 
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/SE_project_live/MauiApp1/MauiApp1/Components/Pages/Home.razor]
+[D:/SE_Project_MAUI_Live/MauiApp1/MauiApp1/Components/Pages/Home.razor]
 build_metadata.AdditionalFiles.GenKind = 
 build_metadata.AdditionalFiles.ManifestResourceName = 
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xIb21lLnJhem9y
 build_metadata.AdditionalFiles.RelativePath = 
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/SE_project_live/MauiApp1/MauiApp1/Components/Pages/Weather.razor]
+[D:/SE_Project_MAUI_Live/MauiApp1/MauiApp1/Components/Pages/Weather.razor]
 build_metadata.AdditionalFiles.GenKind = 
 build_metadata.AdditionalFiles.ManifestResourceName = 
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xXZWF0aGVyLnJhem9y
 build_metadata.AdditionalFiles.RelativePath = 
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/SE_project_live/MauiApp1/MauiApp1/Routes.razor]
+[D:/SE_Project_MAUI_Live/MauiApp1/MauiApp1/Routes.razor]
 build_metadata.AdditionalFiles.GenKind = 
 build_metadata.AdditionalFiles.ManifestResourceName = 
 build_metadata.AdditionalFiles.TargetPath = Um91dGVzLnJhem9y
 build_metadata.AdditionalFiles.RelativePath = 
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/SE_project_live/MauiApp1/MauiApp1/_Imports.razor]
+[D:/SE_Project_MAUI_Live/MauiApp1/MauiApp1/_Imports.razor]
 build_metadata.AdditionalFiles.GenKind = 
 build_metadata.AdditionalFiles.ManifestResourceName = 
 build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
 build_metadata.AdditionalFiles.RelativePath = 
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/SE_project_live/MauiApp1/MauiApp1/Components/Layout/MainLayout.razor]
+[D:/SE_Project_MAUI_Live/MauiApp1/MauiApp1/Components/Layout/MainLayout.razor]
 build_metadata.AdditionalFiles.GenKind = 
 build_metadata.AdditionalFiles.ManifestResourceName = 
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcTWFpbkxheW91dC5yYXpvcg==
 build_metadata.AdditionalFiles.RelativePath = 
 build_metadata.AdditionalFiles.CssScope = b-w4ahko8s4q
 
-[D:/SE_project_live/MauiApp1/MauiApp1/Components/Layout/NavMenu.razor]
+[D:/SE_Project_MAUI_Live/MauiApp1/MauiApp1/Components/Layout/NavMenu.razor]
 build_metadata.AdditionalFiles.GenKind = 
 build_metadata.AdditionalFiles.ManifestResourceName = 
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcTmF2TWVudS5yYXpvcg==

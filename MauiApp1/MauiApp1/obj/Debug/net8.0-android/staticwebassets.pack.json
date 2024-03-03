@@ -1,27 +1,27 @@
 {
   "Files": [
     {
-      "Id": "D:\\SE_project_live\\MauiApp1\\MauiApp1\\obj\\Debug\\net8.0-android\\scopedcss\\bundle\\MauiApp1.styles.css",
+      "Id": "D:\\SE_Project_MAUI_Live\\MauiApp1\\MauiApp1\\obj\\Debug\\net8.0-android\\scopedcss\\bundle\\MauiApp1.styles.css",
       "PackagePath": "staticwebassets\\MauiApp1.styles.css"
     },
     {
-      "Id": "D:\\SE_project_live\\MauiApp1\\MauiApp1\\wwwroot\\css\\app.css",
+      "Id": "D:\\SE_Project_MAUI_Live\\MauiApp1\\MauiApp1\\wwwroot\\css\\app.css",
       "PackagePath": "staticwebassets\\css\\app.css"
     },
     {
-      "Id": "D:\\SE_project_live\\MauiApp1\\MauiApp1\\wwwroot\\css\\bootstrap\\bootstrap.min.css",
+      "Id": "D:\\SE_Project_MAUI_Live\\MauiApp1\\MauiApp1\\wwwroot\\css\\bootstrap\\bootstrap.min.css",
       "PackagePath": "staticwebassets\\css\\bootstrap\\bootstrap.min.css"
     },
     {
-      "Id": "D:\\SE_project_live\\MauiApp1\\MauiApp1\\wwwroot\\css\\bootstrap\\bootstrap.min.css.map",
+      "Id": "D:\\SE_Project_MAUI_Live\\MauiApp1\\MauiApp1\\wwwroot\\css\\bootstrap\\bootstrap.min.css.map",
       "PackagePath": "staticwebassets\\css\\bootstrap\\bootstrap.min.css.map"
     },
     {
-      "Id": "D:\\SE_project_live\\MauiApp1\\MauiApp1\\wwwroot\\favicon.png",
+      "Id": "D:\\SE_Project_MAUI_Live\\MauiApp1\\MauiApp1\\wwwroot\\favicon.png",
       "PackagePath": "staticwebassets\\favicon.png"
     },
     {
-      "Id": "D:\\SE_project_live\\MauiApp1\\MauiApp1\\wwwroot\\index.html",
+      "Id": "D:\\SE_Project_MAUI_Live\\MauiApp1\\MauiApp1\\wwwroot\\index.html",
       "PackagePath": "staticwebassets\\index.html"
     },
     {
