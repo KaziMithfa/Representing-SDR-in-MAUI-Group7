@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-//Code Function
+
 namespace MauiApp1
 {
     public static class MauiProgram
@@ -22,7 +22,6 @@ namespace MauiApp1
 #endif
 
             return builder.Build();
-            Console.WriteLine("Check");
         }
     }
 }
