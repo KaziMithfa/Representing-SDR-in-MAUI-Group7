@@ -1,0 +1,88 @@
+﻿@page "/heatmap"
+@using MauiApp1.Services
+@inject CsvDataService CsvDataService
+
+<style>
+.scrollable-svg-container {
+    width: 100%; /* or a specific width */
+    height: 100%; /* Adjust based on your needs */
+    overflow: auto;
+    border: 1px solid #ccc;
+}
+</style>
+
+@code {
+    private List<HashSet<int>> activeCellsColumn = new();
+    private bool isHorizontal = false;
+    private int numTouches;
+    private int highlightTouch = 3-1;
+    private string xAxisTitle = "X-Axis";
+    private string yAxisTitle = "Y-Axis";
+    private string figureName = "Activity Graph";
+    private int minCell = 0;
+    private int maxCell = 100;
+    private int minTouch = 0;
+    private int maxTouch = 100;
+    private const int cellWidth = 20;
+    private const int cellHeight = 10;
+    private const int cellPadding = 5;
+    private int chartPadding = 80;
+    private int chartWidth = 800;
+    private int chartHeight = 600;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Initialize your data here
+        string filename = "D:\\SDR_MAUI\\MauiApp1\\MauiApp1\\data.csv";
+        var result = CsvDataService.ReadDataFromCsv(filename);
+        activeCellsColumn = result.Item1;
+
+        numTouches = Math.Min(activeCellsColumn.Count, 1000); // maxCycles is defined elsewhere or passed as a parameter
+                                                              // Calculate chart dimensions dynamically based on the content, if needed
+        CalculateChartDimensions();
+    }
+
+    private string GetCellColor(int rowIndex) => rowIndex == highlightTouch ? "red" : "lightblue";
+
+    private void CalculateChartDimensions()
+    {
+        minCell = int.MaxValue;
+        maxCell = int.MinValue;
+
+        foreach (var column in activeCellsColumn)
+        {
+            if (column.Any())
+            {
+                int currentMin = column.Min();
+                int currentMax = column.Max();
+
+                if (currentMin < minCell)
+                    minCell = currentMin;
+                if (currentMax > maxCell)
+                    maxCell = currentMax;
+            }
+        }
+
+        if (minCell == int.MaxValue && maxCell == int.MinValue)
+        {
+            minCell = 0;
+            maxCell = 0;
+        }
+
+        minTouch = 0;
+        maxTouch = numTouches;
+
+        if (isHorizontal)
+        {
+            int cellRangeSpan = activeCellsColumn.Max(col => col.Max()) + 1 - minCell;
+            chartWidth = (cellRangeSpan * (cellWidth + cellPadding)) + 10; 
+            chartHeight = (numTouches * (cellHeight + cellPadding)) + 200;
+        }
+        else
+        {
+            int cellRangeSpan = activeCellsColumn.Max(col => col.Max()) + 1 - minCell;
+            chartHeight = (cellRangeSpan * (cellHeight + cellPadding)) + 10;
+            chartWidth = (numTouches * (cellWidth + cellPadding)) + 200;
+        }
+    }
+}
