@@ -1,0 +1,140 @@
+﻿@page "/heatmap"
+@using MauiApp1.Services
+@inject CsvDataService CsvDataService
+
+<style>
+.scrollable-svg-container {
+    width: 100%; /* or a specific width */
+    height: 100%; /* Adjust based on your needs */
+    overflow: auto;
+    border: 1px solid #ccc;
+}
+</style>
+
+<div class="scrollable-svg-container">
+    <svg width="@chartWidth" height="@chartHeight" style="border: 1px solid;">
+        @if (activeCellsColumn != null && activeCellsColumn.Any())
+        {
+            //<rect x="@((chartWidth / 2))" y="@(chartHeight-chartHeight+30)" width="@cellWidth" height="@cellHeight" fill="rgba(255, 0, 0, 0.5)" />
+            <text>
+                <text x="@((chartWidth / 2))" y="@(chartHeight-chartHeight+30)" text-anchor="middle" font-size="16">@figureName</text>
+            </text>
+            @if (isHorizontal)
+            {
+                // Horizontal Plotting: Cells on X-Axis, Touches on Y-Axis
+                @for (int rowIndex = 0; rowIndex < numTouches; rowIndex++)
+                {
+                    var yPos = (rowIndex * (cellHeight + cellPadding)) + chartPadding; // Offset for the title
+                    foreach (var cell in activeCellsColumn[rowIndex])
+                    {
+                        var xPos = ((cell - minCell) * (cellWidth + cellPadding)) + chartPadding; // Offset for axis labels
+                        <rect x="@xPos" y="@yPos" width="@cellWidth" height="@cellHeight" fill="@GetCellColor(rowIndex)" />
+                        if (rowIndex == highlightTouch)
+                        {
+                            <rect x="@chartPadding" y="@yPos" width="@chartWidth - (2*chartPadding)" height="@cellHeight" fill="rgba(255, 0, 0, 0.5)" />
+                        }
+                    }
+                }
+            }
+    </svg>
+</div>
+
+@code {
+    private List<HashSet<int>> activeCellsColumn = new();
+    private bool isHorizontal = false;
+    private int numTouches;
+    private int highlightTouch = 3-1;
+    private string xAxisTitle = "X-Axis";
+    private string yAxisTitle = "Y-Axis";
+    private string figureName = "Activity Graph";
+    private int minCell = 0;
+    private int maxCell = 100;
+    private int minTouch = 0;
+    private int maxTouch = 100;
+    private const int cellWidth = 20;
+    private const int cellHeight = 10;
+    private const int cellPadding = 5;
+    private int chartPadding = 80;
+    private int chartWidth = 800;
+    private int chartHeight = 600;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Initialize your data here
+        string filename = "D:\\SDR_MAUI\\MauiApp1\\MauiApp1\\data.csv";
+        var result = CsvDataService.ReadDataFromCsv(filename);
+        activeCellsColumn = result.Item1;
+
+        numTouches = Math.Min(activeCellsColumn.Count, 1000); // maxCycles is defined elsewhere or passed as a parameter
+                                                              // Calculate chart dimensions dynamically based on the content, if needed
+        CalculateChartDimensions();
+    }
+
+    private string GetCellColor(int rowIndex) => rowIndex == highlightTouch ? "red" : "lightblue";
+
+    private void CalculateChartDimensions()
+    {
+        minCell = int.MaxValue;
+        maxCell = int.MinValue;
+
+        foreach (var column in activeCellsColumn)
+        {
+            if (column.Any())
+            {
+                int currentMin = column.Min();
+                int currentMax = column.Max();
+
+                if (currentMin < minCell)
+                    minCell = currentMin;
+                if (currentMax > maxCell)
+                    maxCell = currentMax;
+            }
+        }
+
+        if (minCell == int.MaxValue && maxCell == int.MinValue)
+        {
+            minCell = 0;
+            maxCell = 0;
+        }
+
+        minTouch = 0;
+        maxTouch = numTouches;
+
+        if (isHorizontal)
+        {
+            int cellRangeSpan = activeCellsColumn.Max(col => col.Max()) + 1 - minCell;
+            chartWidth = (cellRangeSpan * (cellWidth + cellPadding)) + 10; 
+            chartHeight = (numTouches * (cellHeight + cellPadding)) + 200;
+        }
+        else
+        {
+            int cellRangeSpan = activeCellsColumn.Max(col => col.Max()) + 1 - minCell;
+            chartHeight = (cellRangeSpan * (cellHeight + cellPadding)) + 10;
+            chartWidth = (numTouches * (cellWidth + cellPadding)) + 200;
+        }
+    }
+
+    private IEnumerable<(string label, int pos)> GenerateAxisLabels(int min, int max, int length, bool isVertical)
+    {
+        var labels = new List<(string label, int pos)>();
+        int range = max - min;
+        int step = Math.Max(1, range / 10); // Adjust the step/density of labels as needed
+
+        for (int i = min; i <= max; i += step)
+        {
+            var label = i.ToString();
+            int pos;
+            if (isVertical)
+            {
+                pos = Convert.ToInt32((float)(i - min) / range * length) + chartPadding;
+            }
+            else
+            {
+                pos = Convert.ToInt32((float)(i - min) / range * length) + chartPadding;
+            }
+            labels.Add((label, pos));
+        }
+
+        return labels;
+    }
+}
