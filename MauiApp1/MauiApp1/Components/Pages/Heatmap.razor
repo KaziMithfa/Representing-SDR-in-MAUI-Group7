@@ -36,6 +36,61 @@
                     }
                 }
             }
+            else
+            {
+                // Vertical Plotting: Touches on X-Axis, Cells on Y-Axis
+                @for (int touchIndex = 0; touchIndex < numTouches; touchIndex++)
+                {
+                    var xPos = (touchIndex * (cellWidth + cellPadding)) + chartPadding;
+                    foreach (var cell in activeCellsColumn[touchIndex])
+                    {
+                        // Reversed yPos calculation
+                        var yPos = chartHeight - ((cell - minCell + 1) * (cellHeight + cellPadding)) - chartPadding;
+                        <rect x="@xPos" y="@yPos" width="@cellWidth" height="@cellHeight" fill="@GetCellColor(touchIndex)" />
+                        if (touchIndex == highlightTouch)
+                        {
+                            <rect x="@xPos" y="@chartPadding" width="@cellWidth" height="@chartHeight - (2*chartPadding)" fill="rgba(255, 0, 0, 0.5)" />
+                        }
+                    }
+                }
+            }
+
+            // Drawing Axes
+            // Y-Axis
+            <line x1="@chartPadding" y1="30" x2="@chartPadding" y2="@(chartHeight - chartPadding)" stroke="black" />
+            // X-Axis
+            <line x1="@chartPadding" y1="@(chartHeight - chartPadding)" x2="@(chartWidth - chartPadding)" y2="@(chartHeight - chartPadding)" stroke="black" />
+
+            // Axis Titles
+            <text>
+                <text x="@((chartWidth / 2))" y="@(chartHeight - 5)" text-anchor="middle" font-size="14">@xAxisTitle</text>
+            </text>
+
+            <text>
+                <text x="15" y="@((chartHeight / 2))"
+                      transform="rotate(-90 15, @((chartHeight / 2)))"
+                      text-anchor="middle" font-size="14">@yAxisTitle</text>
+            </text>
+            // Plotting logic...
+
+            // Dynamic Axis Labels for Y-Axis
+            @foreach (var label in GenerateAxisLabels(isHorizontal ? minTouch : minCell,
+           isHorizontal ? maxTouch : maxCell, chartHeight - (2 * chartPadding), true))
+            {
+                <text>
+                    <text x="@((chartPadding - 10))" y="@(chartHeight - label.pos)" text-anchor="end" font-size="12">@label.label</text>
+                </text>
+            }
+
+            // Dynamic Axis Labels for X-Axis
+            @foreach (var label in GenerateAxisLabels(isHorizontal ? minCell : minTouch,
+           isHorizontal ? maxCell : maxTouch, chartWidth - (2 * chartPadding), false))
+            {
+                <text>
+                    <text x="@(label.pos)" y="@(chartHeight - chartPadding + 20)" text-anchor="middle" font-size="12">@label.label</text>
+                </text>
+            }
+        }
     </svg>
 </div>
 
@@ -61,7 +116,7 @@
     protected override async Task OnInitializedAsync()
     {
         // Initialize your data here
-        string filename = "D:\\SDR_MAUI\\MauiApp1\\MauiApp1\\data.csv";
+        string filename = "D:\\MauiApp\\Representing-SDR-in-MAUI-Group7\\MauiApp1\\MauiApp1\\dummy.csv";
         var result = CsvDataService.ReadDataFromCsv(filename);
         activeCellsColumn = result.Item1;
 
