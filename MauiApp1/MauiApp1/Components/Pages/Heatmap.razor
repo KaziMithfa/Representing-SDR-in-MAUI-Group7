@@ -11,23 +11,74 @@
 }
 </style>
 
+<EditForm Model="@heatmapInputModel" OnValidSubmit="HandleValidSubmit">
+    <div class="form-container">
+        <div class="form-column">
+            <div class="form-row">
+                <label>CSV File:</label>
+                <InputFile OnChange="HandleFileSelected" accept=".csv" />
+            </div>
+            <div class="form-row">
+                <label>Highlight Touch:</label>
+                <InputNumber @bind-Value="heatmapInputModel.HighlightTouch" class="form-control" />
+            </div>
+            <div class="form-row">
+                <label>Figure Name:</label>
+                <InputText @bind-Value="heatmapInputModel.FigureName" class="form-control" />
+            </div>
+        </div>
+        <div class="form-column">
+            <div class="form-row">
+                <label>X Axis Title:</label>
+                <InputText @bind-Value="heatmapInputModel.XAxisTitle" class="form-control" />
+            </div>
+            <div class="form-row">
+                <label>Y Axis Title:</label>
+                <InputText @bind-Value="heatmapInputModel.YAxisTitle" class="form-control" />
+            </div>
+            <div class="form-row">
+                <label>Chart Orientation:</label>
+                <InputSelect @bind-Value="heatmapInputModel.IsHorizontal" class="form-control">
+                    <option value="true">Horizontal</option>
+                    <option value="false">Vertical</option>
+                </InputSelect>
+            </div>
+        </div>
+        <div class="form-column">
+            <div class="form-row">
+                <label>Min Cell:</label>
+                <InputNumber @bind-Value="heatmapInputModel.MinCell" class="form-control" />
+            </div>
+            <div class="form-row">
+                <label>Max Cell:</label>
+                <InputNumber @bind-Value="heatmapInputModel.MaxCell" class="form-control" />
+            </div>
+            <!-- Add more inputs as needed -->
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Generate Chart</button>
+</EditForm>
+
+<button @onclick="DownloadSVG">Download SVG</button>
+
 <div class="scrollable-svg-container">
-    <svg width="@chartWidth" height="@chartHeight" style="border: 1px solid;">
+    <svg id="heatmapSvg" width="@chartWidth" height="@chartHeight" style="border: 1px solid;">
         @if (activeCellsColumn != null && activeCellsColumn.Any())
         {
             //<rect x="@((chartWidth / 2))" y="@(chartHeight-chartHeight+30)" width="@cellWidth" height="@cellHeight" fill="rgba(255, 0, 0, 0.5)" />
             <text>
-                <text x="@((chartWidth / 2))" y="@(chartHeight-chartHeight+30)" text-anchor="middle" font-size="16">@figureName</text>
+                <text x="@((chartWidth / 2))" y="@(30)" text-anchor="middle" font-size="16">@figureName</text>
             </text>
             @if (isHorizontal)
             {
                 // Horizontal Plotting: Cells on X-Axis, Touches on Y-Axis
                 @for (int rowIndex = 0; rowIndex < numTouches; rowIndex++)
                 {
-                    var yPos = (rowIndex * (cellHeight + cellPadding)) + chartPadding; // Offset for the title
+                    var yPos = chartHeight - (rowIndex * (cellHeight + cellPadding)) - chartPadding;
                     foreach (var cell in activeCellsColumn[rowIndex])
                     {
-                        var xPos = ((cell - minCell) * (cellWidth + cellPadding)) + chartPadding; // Offset for axis labels
+                        var xPos = ((cell - minCell + 1) * (cellWidth + cellPadding)) + chartPadding - 50; // Offset for axis labels
                         <rect x="@xPos" y="@yPos" width="@cellWidth" height="@cellHeight" fill="@GetCellColor(rowIndex)" />
                         if (rowIndex == highlightTouch)
                         {
@@ -35,6 +86,11 @@
                         }
                     }
                 }
+                // Y-Axis
+                <line x1="@(chartPadding-30)" y1="30" x2="@(chartPadding-30)" y2="@(chartHeight - chartPadding + 30)" stroke="black" />
+                // X-Axis
+                <line x1="@(chartPadding-30)" y1="@(chartHeight - chartPadding + 30)" x2="@(chartWidth - chartPadding + 50)" y2="@(chartHeight - chartPadding + 30)" stroke="black" />
+
             }
             else
             {
@@ -53,17 +109,39 @@
                         }
                     }
                 }
+
+
+                // Y-Axis
+                <line x1="@(chartPadding-30)" y1="30" x2="@(chartPadding-30)" y2="@(chartHeight - chartPadding + 30)" stroke="black" />
+                // X-Axis
+                <line x1="@(chartPadding-30)" y1="@(chartHeight - chartPadding + 30)" x2="@(chartWidth - chartPadding + 50)" y2="@(chartHeight - chartPadding + 30)" stroke="black" />
+
+
+
+                // Dynamic Axis Labels for Y-Axis
+                @foreach (var label in GenerateAxisLabels(isHorizontal ? minTouch : minCell,
+               isHorizontal ? maxTouch : maxCell, @* chartHeight - (2 * (chartPadding)) ,*@ true))
+                {
+                    <text>
+                        <text x="@((chartPadding - 35))" y="@(chartHeight - chartPadding - label.pos)" text-anchor="end" font-size="12">@label.label</text>
+                    </text>
+                }
+
+                // Dynamic Axis Labels for X-Axis
+                @foreach (var label in GenerateAxisLabels(isHorizontal ? minCell : minTouch,
+               isHorizontal ? maxCell : maxTouch, @* chartWidth - (2 * (chartPadding)), *@ false))
+                {
+                    <text>
+                        <text x="@(label.pos +chartPadding- 35)" y="@(chartHeight - chartPadding + 45)" text-anchor="middle" font-size="12">@label.label</text>
+                    </text>
+                }
             }
 
-            // Drawing Axes
-            // Y-Axis
-            <line x1="@chartPadding" y1="30" x2="@chartPadding" y2="@(chartHeight - chartPadding)" stroke="black" />
-            // X-Axis
-            <line x1="@chartPadding" y1="@(chartHeight - chartPadding)" x2="@(chartWidth - chartPadding)" y2="@(chartHeight - chartPadding)" stroke="black" />
 
             // Axis Titles
             <text>
-                <text x="@((chartWidth / 2))" y="@(chartHeight - 5)" text-anchor="middle" font-size="14">@xAxisTitle</text>
+                <text x="@((chartWidth / 2))" y="@(chartHeight - 5)"
+                      text-anchor="middle" font-size="14">@xAxisTitle</text>
             </text>
 
             <text>
@@ -71,25 +149,6 @@
                       transform="rotate(-90 15, @((chartHeight / 2)))"
                       text-anchor="middle" font-size="14">@yAxisTitle</text>
             </text>
-            // Plotting logic...
-
-            // Dynamic Axis Labels for Y-Axis
-            @foreach (var label in GenerateAxisLabels(isHorizontal ? minTouch : minCell,
-           isHorizontal ? maxTouch : maxCell, chartHeight - (2 * chartPadding), true))
-            {
-                <text>
-                    <text x="@((chartPadding - 10))" y="@(chartHeight - label.pos)" text-anchor="end" font-size="12">@label.label</text>
-                </text>
-            }
-
-            // Dynamic Axis Labels for X-Axis
-            @foreach (var label in GenerateAxisLabels(isHorizontal ? minCell : minTouch,
-           isHorizontal ? maxCell : maxTouch, chartWidth - (2 * chartPadding), false))
-            {
-                <text>
-                    <text x="@(label.pos)" y="@(chartHeight - chartPadding + 20)" text-anchor="middle" font-size="12">@label.label</text>
-                </text>
-            }
         }
     </svg>
 </div>
@@ -112,11 +171,12 @@
     private int chartPadding = 80;
     private int chartWidth = 800;
     private int chartHeight = 600;
+    private HeatmapInputModel heatmapInputModel = new HeatmapInputModel();
 
     protected override async Task OnInitializedAsync()
     {
         // Initialize your data here
-        string filename = "D:\\MauiApp\\Representing-SDR-in-MAUI-Group7\\MauiApp1\\MauiApp1\\dummy.csv";
+        string filename = "E:\\study\\Software Project\\SDRRepresentation\\MauiApp1\\MauiApp1\\dummy.csv";
         var result = CsvDataService.ReadDataFromCsv(filename);
         activeCellsColumn = result.Item1;
 
