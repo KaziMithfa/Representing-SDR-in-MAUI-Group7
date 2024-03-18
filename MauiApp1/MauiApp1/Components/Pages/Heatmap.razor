@@ -171,17 +171,39 @@
     private int chartPadding = 80;
     private int chartWidth = 800;
     private int chartHeight = 600;
+    private HeatmapInputModel heatmapInputModel = new HeatmapInputModel();
 
-    protected override async Task OnInitializedAsync()
+    private async Task HandleValidSubmit()
     {
-        // Initialize your data here
-        string filename = "E:\\study\\Software Project\\SDRRepresentation\\MauiApp1\\MauiApp1\\dummy.csv";
-        var result = CsvDataService.ReadDataFromCsv(filename);
+    // Handle CSV file reading and heatmap data preparation
+    if (heatmapInputModel.CsvFile != null)
+    {
+        var maxFileSize = 1024 * 1024; // For example, 1MB max file size
+        var stream = heatmapInputModel.CsvFile.OpenReadStream(maxFileSize);
+        var result = await CsvDataService.ReadDataFromCsvAsync(stream);
         activeCellsColumn = result.Item1;
-
-        numTouches = Math.Min(activeCellsColumn.Count, 1000); // maxCycles is defined elsewhere or passed as a parameter
-                                                              // Calculate chart dimensions dynamically based on the content, if needed
-        CalculateChartDimensions();
+        highlightTouch = heatmapInputModel.HighlightTouch;
+        figureName = heatmapInputModel.FigureName;
+        xAxisTitle = heatmapInputModel.XAxisTitle;
+        yAxisTitle = heatmapInputModel.YAxisTitle;
+        isHorizontal = heatmapInputModel.IsHorizontal;
+        numTouches = Math.Min(activeCellsColumn.Count, 1000);
+        // Recalculate chart dimensions and labels based on inputs
+        CalculateChartDimensions(); // Update this method as needed
+    }
+    StateHasChanged();
+    }
+    private async Task DownloadSVG()
+    {
+    await JSRuntime.InvokeVoidAsync("downloadFile", "heatmap.svg");
+    }
+    private void HandleFileSelected(InputFileChangeEventArgs e)
+    {
+    var file = e.File; // If allowing multiple files, you can use e.GetMultipleFiles()
+    if (file != null)
+    {
+        heatmapInputModel.CsvFile = file; // Assuming CsvFile is of type IBrowserFile
+    }
     }
 
     private string GetCellColor(int rowIndex) => rowIndex == highlightTouch ? "red" : "lightblue";
@@ -252,3 +274,177 @@
         return labels;
     }
 }
+
+        private void CalculateChartDimensions()
+    {
+        minCell = int.MaxValue;
+        maxCell = int.MinValue;
+
+        foreach (var column in activeCellsColumn)
+        {
+            if (column.Any())
+            {
+                int currentMin = column.Min();
+                int currentMax = column.Max();
+
+                if (currentMin < minCell)
+                    minCell = currentMin;
+                if (currentMax > maxCell)
+                    maxCell = currentMax;
+            }
+        }
+
+        if (minCell == int.MaxValue && maxCell == int.MinValue)
+        {
+            minCell = 0;
+            maxCell = 0;
+        }
+
+        minTouch = 0;
+        maxTouch = numTouches;
+
+        if (isHorizontal)
+        {
+            int cellRangeSpan = activeCellsColumn.Max(col => col.Max()) + 1 - minCell;
+            chartWidth = (cellRangeSpan * (cellWidth + cellPadding)) + chartPadding + 50;
+            chartHeight = (numTouches * (cellHeight + cellPadding)) + 200;
+        }
+        else
+        {
+            int cellRangeSpan = activeCellsColumn.Max(col => col.Max()) + 1 - minCell;
+            chartHeight = (cellRangeSpan * (cellHeight + cellPadding)) + chartPadding + 50;
+            chartWidth = (numTouches * (cellWidth + cellPadding)) + 200;
+        }
+    }
+    // private IEnumerable<(string label, int pos)> GenerateAxisLabels(int min, int max, int length, bool isVertical)
+    // {
+    //     var labels = new List<(string label, int pos)>();
+    //     int range = max - min;
+
+    //     // Dynamically adjust the label density based on the orientation and dimensions.
+    //     int labelDensityFactor = isVertical ? CalculateLabelDensity(length, true) : CalculateLabelDensity(length, false);
+    //     int step = Math.Max(1, range / labelDensityFactor);
+
+    //     for (int i = min; i <= max; i += step)
+    //     {
+    //         var label = i.ToString();
+    //         // Calculate label positions more precisely considering the length and density
+    //         float posRatio = (float)(i - min) / range;
+    //         int pos = isVertical ? Convert.ToInt32(posRatio * length) + chartPadding
+    //                              : Convert.ToInt32(posRatio * (length - 20)) + chartPadding + 20; // Adjust based on your layout
+
+    //         labels.Add((label, pos));
+    //     }
+
+    //     return labels;
+    // }
+
+    // // Method to dynamically adjust label density based on the axis length and orientation
+    // private int CalculateLabelDensity(int length, bool isVertical)
+    // {
+    //     // Example logic to adjust label density
+    //     if (isVertical)
+    //     {
+    //         // Assume more space is available vertically, hence more labels can fit
+    //         return length / 100; // Example: one label per 100 pixels
+    //     }
+    //     else
+    //     {
+    //         // Assume horizontal space might be more limited
+    //         return Math.Max(5, length / 150); // Example: reduce label count for horizontal orientation
+    //     }
+    // }
+
+    // private IEnumerable<(string label, int pos)> GenerateAxisLabels(int min, int max, int length, bool isVertical)
+    // {
+    //     var labels = new List<(string label, int pos)>();
+    //     int range = max - min;
+    //     int step = Math.Max(1, range / 10); // Adjust the step/density of labels as needed
+
+    //     int startOffset = isVertical ? (int)(cellHeight / 2 + chartPadding) : (int)(cellWidth / 2 + chartPadding);
+
+    //     for (int i = min; i <= max; i += step)
+    //     {
+    //         var label = i.ToString();
+    //         int pos;
+    //         if (isVertical)
+    //         {
+    //             pos = Convert.ToInt32(((float)(i - min) / range) * (length - cellHeight)) + startOffset;
+    //         }
+    //         else
+    //         {
+    //             pos = Convert.ToInt32(((float)(i - min) / range) * (length - cellWidth)) + startOffset;
+    //         }
+    //         labels.Add((label, pos));
+    //     }
+
+    //     return labels;
+    // }
+
+    private IEnumerable<(string label, int pos)> GenerateAxisLabels(int min, int max, bool isVertical)
+    {
+        var labels = new List<(string label, int pos)>();
+        int range = max - min;
+
+        // Dynamically adjust the label density based on the orientation and dimensions.
+        int step = Math.Max(1, range / 10);
+
+        string label;
+        int pos;
+
+        for (int i = min; i <= max; i += step)
+        {
+            label = i.ToString();
+
+            if (isVertical)
+            {
+                pos = Convert.ToInt32((float)(i - min) * (cellHeight + (cellPadding))) + 8;
+                //pos = Convert.ToInt32((((float)(i - min)) * cellHeight + (2 * cellPadding)));
+            }
+            else
+            {
+                pos = Convert.ToInt32((float)(i - min) * (cellWidth + (cellPadding))) + 20;
+                //pos = Convert.ToInt32(((float)(i - min) / range) * cellWidth) + (2 * cellPadding);
+            }
+
+            labels.Add((label, pos));
+        }
+
+        //add max
+        if (isVertical)
+        {
+            label = max.ToString();
+            pos = Convert.ToInt32((float)(max - min) * (cellHeight + (cellPadding))) + 8;
+            labels.Add((label, pos));
+        }
+        else
+        {
+            label = max.ToString();
+            pos = Convert.ToInt32((float)(max - min) * (cellWidth + (cellPadding))) + 20;
+            labels.Add((label, pos));
+        }
+
+        return labels;
+    }
+}
+
+<script>
+    function getSvgContent() {
+        var svg = document.getElementById('heatmapSvg');
+        return svg.outerHTML;
+    }
+
+    function downloadFile(fileName) {
+        var content = getSvgContent();
+        var blob = new Blob([content], { type: 'image/svg+xml;charset=utf-8' });
+        var url = URL.createObjectURL(blob);
+
+        var downloadLink = document.createElement("a");
+        downloadLink.href = url;
+        downloadLink.download = fileName;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        URL.revokeObjectURL(url);
+    }
+</script>
