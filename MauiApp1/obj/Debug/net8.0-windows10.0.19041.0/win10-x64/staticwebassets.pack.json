@@ -1,0 +1,45 @@
+{
+  "Files": [
+    {
+      "Id": "D:\\GitMainSE_PROJECT\\MauiApp1\\obj\\Debug\\net8.0-windows10.0.19041.0\\win10-x64\\scopedcss\\bundle\\MauiApp1.styles.css",
+      "PackagePath": "staticwebassets\\MauiApp1.styles.css"
+    },
+    {
+      "Id": "D:\\GitMainSE_PROJECT\\MauiApp1\\wwwroot\\css\\app.css",
+      "PackagePath": "staticwebassets\\css\\app.css"
+    },
+    {
+      "Id": "D:\\GitMainSE_PROJECT\\MauiApp1\\wwwroot\\css\\bootstrap\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\css\\bootstrap\\bootstrap.min.css"
+    },
+    {
+      "Id": "D:\\GitMainSE_PROJECT\\MauiApp1\\wwwroot\\css\\bootstrap\\bootstrap.min.css.map",
+      "PackagePath": "staticwebassets\\css\\bootstrap\\bootstrap.min.css.map"
+    },
+    {
+      "Id": "D:\\GitMainSE_PROJECT\\MauiApp1\\wwwroot\\favicon.png",
+      "PackagePath": "staticwebassets\\favicon.png"
+    },
+    {
+      "Id": "D:\\GitMainSE_PROJECT\\MauiApp1\\wwwroot\\index.html",
+      "PackagePath": "staticwebassets\\index.html"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0-windows10.0.19041.0\\win10-x64\\staticwebassets\\msbuild.MauiApp1.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0-windows10.0.19041.0\\win10-x64\\staticwebassets\\msbuild.build.MauiApp1.props",
+      "PackagePath": "build\\MauiApp1.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0-windows10.0.19041.0\\win10-x64\\staticwebassets\\msbuild.buildMultiTargeting.MauiApp1.props",
+      "PackagePath": "buildMultiTargeting\\MauiApp1.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0-windows10.0.19041.0\\win10-x64\\staticwebassets\\msbuild.buildTransitive.MauiApp1.props",
+      "PackagePath": "buildTransitive\\MauiApp1.props"
+    }
+  ],
+  "ElementsToRemove": []
+}
