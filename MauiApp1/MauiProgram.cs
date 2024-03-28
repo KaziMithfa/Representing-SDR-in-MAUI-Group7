@@ -17,6 +17,7 @@ namespace MauiApp1
 
             builder.Services.AddMauiBlazorWebView();
             builder.Services.AddSingleton<CsvDataService>();
+            builder.Services.AddSingleton<IPath, PathService>();
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();
