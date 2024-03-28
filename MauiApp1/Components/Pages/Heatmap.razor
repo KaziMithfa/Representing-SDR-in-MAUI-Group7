@@ -1,393 +1,508 @@
 ﻿@page "/heatmap"
+
+@*Adding Necessary Libraries*@
 @using MauiApp1.Services
+@using SkiaSharp;
+@using Svg.Skia;
+@using System.IO;
+@using Microsoft.Maui.Storage;
+
+@*Adding Necessary Helper Services*@
 @inject CsvDataService CsvDataService
 @inject IJSRuntime JSRuntime
+@inject IPath PathProvider
 
+@*Styling Start*@
 <style>
-    .scrollable-svg-container {
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        border: 1px solid #ccc;
-    }
+	.scrollable-svg-container {
+		width: 100%;
+		height: 100%;
+		overflow: auto;
+		border: 1px solid #ccc;
+	}
 </style>
+@*Styling End*@
 
+@*User Input Form*@
 <EditForm Model="@heatmapInputModel" OnValidSubmit="HandleValidSubmit">
-    <div class="form-container">
-        <div class="form-column">
-            <div class="form-row">
-                <InputRadioGroup @bind-Value="heatmapInputModel.UseFileInput">
-                    <InputRadio Value="true" /> <label>Upload CSV File</label>
-                    <InputRadio Value="false" /> <label>Input CSV Content Directly</label>
-                </InputRadioGroup>
-            </div>
+	<div class="form-container">
+		<div class="form-column">
+			<div class="form-row">
+				<InputRadioGroup @bind-Value="heatmapInputModel.UseFileInput">
+					<InputRadio Value="true" /> <label>Upload CSV File</label>
+					<InputRadio Value="false" /> <label>Input CSV Content Directly</label>
+				</InputRadioGroup>
+			</div>
 
-            @if (heatmapInputModel.UseFileInput)
-            {
-                <div class="form-row">
-                    <label>CSV File:</label>
-                    <InputFile OnChange="HandleFileSelected" accept=".csv" />
-                </div>
-            }
-            else
-            {
-                <div class="form-row">
-                    <label>CSV Content:</label>
-                    <InputTextArea @bind-Value="heatmapInputModel.CsvContent" class="form-control" rows="10" />
-                </div>
-            }
+			@if (heatmapInputModel.UseFileInput)
+			{
+				<div class="form-row">
+					<label>CSV File:</label>
+					<InputFile OnChange="HandleFileSelected" accept=".csv" />
+				</div>
+			}
+			else
+			{
+				<div class="form-row">
+					<label>CSV Content:</label>
+					<InputTextArea @bind-Value="heatmapInputModel.CsvContent" class="form-control" rows="10" />
+				</div>
+			}
 
-            <div class="form-row">
-                <label>Highlight Touch:</label>
-                <InputNumber @bind-Value="heatmapInputModel.HighlightTouch" class="form-control" />
-            </div>
-            <div class="form-row">
-                <label>Figure Name:</label>
-                <InputText @bind-Value="heatmapInputModel.FigureName" class="form-control" />
-            </div>
-        </div>
-        <div class="form-column">
-            <div class="form-row">
-                <label>X Axis Title:</label>
-                <InputText @bind-Value="heatmapInputModel.XAxisTitle" class="form-control" />
-            </div>
-            <div class="form-row">
-                <label>Y Axis Title:</label>
-                <InputText @bind-Value="heatmapInputModel.YAxisTitle" class="form-control" />
-            </div>
-            <div class="form-row">
-                <label>Chart Orientation:</label>
-                <InputSelect @bind-Value="heatmapInputModel.IsHorizontal" class="form-control">
-                    <option value="true">Horizontal</option>
-                    <option value="false">Vertical</option>
-                </InputSelect>
-            </div>
-        </div>
-        <div class="form-column">
-            <div class="form-row">
-                <label>Max Cycles:</label>
-                <InputNumber @bind-Value="heatmapInputModel.MaxCycles" class="form-control" />
-            </div>
-        </div>
-    </div>
+			<div class="form-row">
+				<label>Highlight Touch:</label>
+				<InputNumber @bind-Value="heatmapInputModel.HighlightTouch" class="form-control" />
+			</div>
+			<div class="form-row">
+				<label>Figure Name:</label>
+				<InputText @bind-Value="heatmapInputModel.FigureName" class="form-control" />
+			</div>
+		</div>
+		<div class="form-column">
+			<div class="form-row">
+				<label>X Axis Title:</label>
+				<InputText @bind-Value="heatmapInputModel.XAxisTitle" class="form-control" />
+			</div>
+			<div class="form-row">
+				<label>Y Axis Title:</label>
+				<InputText @bind-Value="heatmapInputModel.YAxisTitle" class="form-control" />
+			</div>
+			<div class="form-row">
+				<label>Chart Orientation:</label>
+				<InputSelect @bind-Value="heatmapInputModel.IsHorizontal" class="form-control">
+					<option value="true">Horizontal</option>
+					<option value="false">Vertical</option>
+				</InputSelect>
+			</div>
+		</div>
+		<div class="form-column">
+			<div class="form-row">
+				<label>Max Cycles:</label>
+				<InputNumber @bind-Value="heatmapInputModel.MaxCycles" class="form-control" />
+			</div>
+		</div>
+	</div>
 
-    <button type="submit" class="btn btn-primary">Generate Chart</button>
+	<button type="submit" class="btn btn-primary">Generate Chart</button>
 </EditForm>
 
 <button @onclick="DownloadSVG">Download SVG</button>
 
+@*Scrollable container for Activity Diagram*@
 <div class="scrollable-svg-container">
-    <svg id="heatmapSvg" width="@chartWidth" height="@chartHeight" style="border: 1px solid;">
-        @if (activeCellsColumn != null && activeCellsColumn.Any())
-        {
-            <text>
-                <text x="@((chartWidth / 2))" y="@(30)" text-anchor="middle" font-size="16">@figureName</text>
-            </text>
-            @if (isHorizontal)
-            {
-                @for (int rowIndex = 0; rowIndex < numTouches; rowIndex++)
-                {
-                    var yPos = chartHeight - (rowIndex * (cellHeight + cellPadding)) - chartPadding;
-                    foreach (var cell in activeCellsColumn[rowIndex])
-                    {
-                        var xPos = ((cell - minCell + 1) * (cellWidth + cellPadding)) + chartPadding - 50; // Offset for axis labels
-                        <rect x="@xPos" y="@yPos" width="@cellWidth" height="@cellHeight" fill="@GetCellColor(rowIndex)" />
-                        if (rowIndex == highlightTouch)
-                        {
-                            <rect x="@chartPadding" y="@yPos" width="@chartWidth - (2*chartPadding)" height="@cellHeight" fill="rgba(255, 0, 0, 0.5)" />
-                        }
-                    }
-                }
-                <line x1="@(chartPadding-30)" y1="30" x2="@(chartPadding-30)" y2="@(chartHeight - chartPadding + 30)" stroke="black" />
-                <line x1="@(chartPadding-30)" y1="@(chartHeight - chartPadding + 30)" x2="@(chartWidth - chartPadding + 50)" y2="@(chartHeight - chartPadding + 30)" stroke="black" />
+	<svg id="heatmapSvg" width="@chartWidth" height="@chartHeight" style="border: 1px solid;">
+		@if (activeCellsColumn != null && activeCellsColumn.Any())
+		{
+			<text>
+				<text x="@((chartWidth / 2))" y="@(15)" text-anchor="middle" font-size="16">@figureName</text>
+			</text>
+			@*If horizontal chart selected*@
+			@if (isHorizontal)
+			{
+				@*Running loop on all the rows*@
+				@for (int rowIndex = 0; rowIndex < numTouches; rowIndex++)
+				{
+					@*For horizontal chart, y axis is same across all the values in a row*@
+					var yPos = chartHeight - (rowIndex * (cellHeight + cellPadding)) - chartPadding;
+					@*Running loop on all the activity values in a row*@
+					foreach (var cell in activeCellsColumn[rowIndex])
+					{
+						var xPos = ((cell - minCell + 1) * (cellWidth - 2)) + chartPadding;
+						@*Drawing individual cells*@
+						<rect x="@xPos" y="@yPos" width="@cellWidth" height="@cellHeight" fill="@GetCellColor(rowIndex)" />
+						if (rowIndex == highlightTouch)
+						{
+							<rect x="@(chartPadding - 50)" y="@yPos" width="@(chartWidth - chartPadding)" height="@cellHeight" fill="none" stroke="rgba(255, 0, 0, 0.5)" stroke-width="2" />
+						}
+					}
+				}
+				@*Drawing line for Y Axis*@
+				<line x1="@(chartPadding-30)" y1="40" x2="@(chartPadding-30)" y2="@(chartHeight - chartPadding + 30)" stroke="black" />
+
+				@*Drawing line for X Axis*@
+				<line x1="@(chartPadding-30)" y1="@(chartHeight - chartPadding + 30)" x2="@(chartWidth - chartPadding + 50)" y2="@(chartHeight - chartPadding + 30)" stroke="black" />
+
+				@*Dynamically determining values for Y Axis scale labels*@
+				@foreach (var label in GenerateAxisLabelsVertical(isHorizontal ? minTouch : minCell,
+						isHorizontal ? maxTouch : maxCell, true))
+				{
+					<text>
+						<text x="@((chartPadding - 35))" y="@(chartHeight - label.pos)" text-anchor="end" font-size="12">@label.label</text>
+					</text>
+				}
+
+				@*Dynamically determining values for X Axis scale labels*@
+				@foreach (var label in GenerateAxisLabelsVertical(isHorizontal ? minCell : minTouch,
+						isHorizontal ? maxCell : maxTouch, false))
+				{
+					<text>
+						<text x="@(label.pos)" y="@(chartHeight - chartPadding + 45)" text-anchor="middle" font-size="12">@label.label</text>
+					</text>
+				}
+			}
+			@*If vertical chart selected*@
+			else
+			{
+				@*Running loop on all the rows*@
+				@for (int touchIndex = 0; touchIndex < numTouches; touchIndex++)
+				{
+					@*For vertical chart, x axis is same across all the values in a row*@
+					var xPos = (touchIndex * (cellWidth + cellPadding)) + chartPadding;
+					@*Running loop on all the activity values in a row*@
+					foreach (var cell in activeCellsColumn[touchIndex])
+					{
+						var yPos = chartHeight - ((cell - minCell + 1) * (cellHeight - 2)) - chartPadding;
+						@*Drawing individual cells*@
+						<rect x="@xPos" y="@yPos" width="@cellWidth" height="@cellHeight" fill="@GetCellColor(touchIndex)" />
+						if (touchIndex == highlightTouch)
+						{
+							<rect x="@xPos" y="@(30)" width="@cellWidth" height="@(chartHeight - chartPadding + 30)" fill="none" stroke="rgba(255, 0, 0, 0.5)" stroke-width="2" />
+						}
+					}
+				}
+
+				@*Drawing line for Y Axis*@
+				<line x1="@(chartPadding-30)" y1="30" x2="@(chartPadding-30)" y2="@(chartHeight - chartPadding + 30)" stroke="black" />
+
+				@*Drawing line for X Axis*@
+				<line x1="@(chartPadding-30)" y1="@(chartHeight - chartPadding + 30)" x2="@(chartWidth - chartPadding + 50)" y2="@(chartHeight - chartPadding + 30)" stroke="black" />
 
 
-                @foreach (var label in GenerateAxisLabelsVertical(isHorizontal ? minTouch : minCell,
-               isHorizontal ? maxTouch : maxCell, true))
-                {
-                    <text>
-                        <text x="@((chartPadding - 35))" y="@(chartHeight - chartPadding - label.pos + 17)" text-anchor="end" font-size="12">@label.label</text>
-                    </text>
-                }
+				@*Dynamically determining values for Y Axis scale labels*@
+				@foreach (var label in GenerateAxisLabels(isHorizontal ? minTouch : minCell,
+						isHorizontal ? maxTouch : maxCell, true))
+				{
+					<text>
+						<text x="@((chartPadding - 35))" y="@(chartHeight - chartPadding - label.pos)" text-anchor="end" font-size="12">@label.label</text>
+					</text>
+				}
 
-                @foreach (var label in GenerateAxisLabelsVertical(isHorizontal ? minCell : minTouch,
-               isHorizontal ? maxCell : maxTouch, false))
-                {
-                    <text>
-                        <text x="@(label.pos + chartPadding - 35)" y="@(chartHeight - chartPadding + 45)" text-anchor="middle" font-size="12">@label.label</text>
-                    </text>
-                }
-            }
-            else
-            {
-                @for (int touchIndex = 0; touchIndex < numTouches; touchIndex++)
-                {
-                    var xPos = (touchIndex * (cellWidth + cellPadding)) + chartPadding;
-                    foreach (var cell in activeCellsColumn[touchIndex])
-                    {
-                        var yPos = chartHeight - ((cell - minCell + 1) * (cellHeight + cellPadding)) - chartPadding;
-                        <rect x="@xPos" y="@yPos" width="@cellWidth" height="@cellHeight" fill="@GetCellColor(touchIndex)" />
-                        if (touchIndex == highlightTouch)
-                        {
-                            <rect x="@xPos" y="@chartPadding" width="@cellWidth" height="@chartHeight - (2*chartPadding)" fill="rgba(255, 0, 0, 0.5)" />
-                        }
-                    }
-                }
+				@*Dynamically determining values for X Axis scale labels*@
+				@foreach (var label in GenerateAxisLabels(isHorizontal ? minCell : minTouch,
+						isHorizontal ? maxCell : maxTouch, false))
+				{
+					<text>
+						<text x="@(label.pos)" y="@(chartHeight - chartPadding + 45)" text-anchor="middle" font-size="12">@label.label</text>
+					</text>
+				}
+			}
 
-                //y axis
-                <line x1="@(chartPadding-30)" y1="30" x2="@(chartPadding-30)" y2="@(chartHeight - chartPadding + 30)" stroke="black" />
-                //x axis
-                <line x1="@(chartPadding-30)" y1="@(chartHeight - chartPadding + 30)" x2="@(chartWidth - chartPadding + 50)" y2="@(chartHeight - chartPadding + 30)" stroke="black" />
+			@*Y Axis Label*@
+			<text>
+				<text x="@((5))" y="@((chartHeight / 2))"
+					  text-anchor="middle" font-size="14">@yAxisTitle</text>
+			</text>
 
-
-                //y axis label
-                @foreach (var label in GenerateAxisLabels(isHorizontal ? minTouch : minCell,
-               isHorizontal ? maxTouch : maxCell, true))
-                {
-                    <text>
-                        <text x="@((chartPadding - 35))" y="@(chartHeight - chartPadding - label.pos)" text-anchor="end" font-size="12">@label.label</text>
-                    </text>
-                }
-
-                //x axis label
-                @foreach (var label in GenerateAxisLabels(isHorizontal ? minCell : minTouch,
-               isHorizontal ? maxCell : maxTouch, false))
-                {
-                    <text>
-                        <text x="@(label.pos + chartPadding - 35)" y="@(chartHeight - chartPadding + 45)" text-anchor="middle" font-size="12">@label.label</text>
-                    </text>
-                }
-            }
-
-
-            <text>
-                <text x="@((chartWidth / 2))" y="@(chartHeight - 5)"
-                      text-anchor="middle" font-size="14">@xAxisTitle</text>
-            </text>
-
-            <text>
-                <text x="15" y="@((chartHeight / 2))"
-                      transform="rotate(-90 15, @((chartHeight / 2)))"
-                      text-anchor="middle" font-size="14">@yAxisTitle</text>
-            </text>
-        }
-    </svg>
+			@*X Axis Label*@
+			<text>
+				<text x="@((chartWidth / 2))" y="@(chartHeight - 15)"
+					  text-anchor="middle" font-size="14">@xAxisTitle</text>
+			</text>
+		}
+	</svg>
 </div>
 
 @code {
-    private List<HashSet<int>> activeCellsColumn = new();
-    private bool isHorizontal = false;
-    private int numTouches;
-    private int count;
-    private int highlightTouch = 0;
-    private string xAxisTitle = "X-Axis";
-    private string yAxisTitle = "Y-Axis";
-    private string figureName = "Activity Graph";
+	private List<HashSet<int>> activeCellsColumn = new();
+	private bool isHorizontal = false;
+	private int numTouches;
+	private int count;
+	private int highlightTouch = 0;
+	private string xAxisTitle = "X-Axis";
+	private string yAxisTitle = "Y-Axis";
+	private string figureName = "Activity Graph";
 
-    private int maxCycles = 0;
-    private int minCell = 0;
-    private int maxCell = 100;
-    private int minTouch = 0;
-    private int maxTouch = 100;
-    private const int cellWidth = 20;
-    private const int cellHeight = 10;
-    private const int cellPadding = 5;
-    private int chartPadding = 110;
-    private int chartWidth = 800;
-    private int chartHeight = 600;
-    private HeatmapInputModel heatmapInputModel = new HeatmapInputModel();
+	private int maxCycles = 0;
+	private int minCell = 0;
+	private int maxCell = 100;
+	private int minTouch = 0;
+	private int maxTouch = 100;
+	private double originalCellWidth = 15;
+	private double originalCellHeight = 3;
+	private double cellWidth = 15;
+	private double cellHeight = 3;
+	private const int cellPadding = 1;
+	private double chartPadding = 110;
+	private double chartWidth = 800;
+	private double chartHeight = 600;
+	private HeatmapInputModel heatmapInputModel = new HeatmapInputModel();
 
 
-    private async Task HandleValidSubmit()
-    {
-        if (heatmapInputModel.UseFileInput && heatmapInputModel.CsvFile != null)
-        {
-            var maxFileSize = 1024 * 1024;
-            var stream = heatmapInputModel.CsvFile.OpenReadStream(maxFileSize);
-            var result = await CsvDataService.ReadDataFromCsvAsync(stream);
-            activeCellsColumn = result.Item1;
-        }
-        else if (!heatmapInputModel.UseFileInput && !string.IsNullOrWhiteSpace(heatmapInputModel.CsvContent))
-        {
-            var result = CsvDataService.ReadDataFromCsvContent(heatmapInputModel.CsvContent);
-            activeCellsColumn = result.Item1;
-        }
+	private async Task HandleValidSubmit()
+	{
+		if (heatmapInputModel.UseFileInput && heatmapInputModel.CsvFile != null)
+		{
+			var maxFileSize = 1024 * 1024;
+			var stream = heatmapInputModel.CsvFile.OpenReadStream(maxFileSize);
+			var result = await CsvDataService.ReadDataFromCsvAsync(stream);
+			activeCellsColumn = result.Item1;
+		}
+		else if (!heatmapInputModel.UseFileInput && !string.IsNullOrWhiteSpace(heatmapInputModel.CsvContent))
+		{
+			var result = CsvDataService.ReadDataFromCsvContent(heatmapInputModel.CsvContent);
+			activeCellsColumn = result.Item1;
+		}
 
-        highlightTouch = heatmapInputModel.HighlightTouch - 1;
-        figureName = heatmapInputModel.FigureName;
-        xAxisTitle = heatmapInputModel.XAxisTitle;
-        yAxisTitle = heatmapInputModel.YAxisTitle;
-        isHorizontal = heatmapInputModel.IsHorizontal;
-        numTouches = Math.Min(activeCellsColumn.Count, heatmapInputModel.MaxCycles.HasValue ?
-            heatmapInputModel.MaxCycles.Value : 1000);
-        count = 0;
+		highlightTouch = heatmapInputModel.HighlightTouch - 1;
+		figureName = heatmapInputModel.FigureName;
+		xAxisTitle = heatmapInputModel.XAxisTitle;
+		yAxisTitle = heatmapInputModel.YAxisTitle;
+		isHorizontal = heatmapInputModel.IsHorizontal;
+		numTouches = Math.Min(activeCellsColumn.Count, heatmapInputModel.MaxCycles.HasValue ?
+			heatmapInputModel.MaxCycles.Value : 1000);
+		count = 0;
 
-        CalculateChartDimensions();
-        StateHasChanged();
-    }
-    private async Task DownloadSVG()
-    {
-        await JSRuntime.InvokeVoidAsync("downloadFile", "heatmap.svg");
-    }
-    private void HandleFileSelected(InputFileChangeEventArgs e)
-    {
-        var file = e.File;
-        if (file != null)
-        {
-            heatmapInputModel.CsvFile = file;
-        }
-    }
+		//Swapping height and width of a cell based on orientation
+		if (isHorizontal)
+		{
+			cellWidth = originalCellHeight;
+			cellHeight = originalCellWidth;
+		}
+		else
+		{
+			cellWidth = originalCellWidth;
+			cellHeight = originalCellHeight;
+		}
 
-    private string GetCellColor(int rowIndex) => rowIndex == highlightTouch ? "red" : "lightblue";
+		//Dynamically calculating charts dimention
+		CalculateChartDimensions();
+		StateHasChanged();
+	}
 
-    private void CalculateChartDimensions()
-    {
-        minCell = int.MaxValue;
-        maxCell = int.MinValue;
+	#region Downloading chart code
 
-        foreach (var column in activeCellsColumn)
-        {
-            if (column.Any())
-            {
-                int currentMin = column.Min();
-                int currentMax = column.Max();
+	private async Task DownloadSVG()
+	{
+		// Invoke the JavaScript function to get the SVG content
+		var svgContent = await JSRuntime.InvokeAsync<string>("getSvgContent");
 
-                if (currentMin < minCell)
-                    minCell = currentMin;
-                if (currentMax > maxCell)
-                    maxCell = currentMax;
-            }
-        }
+		var fileName = "heatmap.png";
 
-        if (minCell == int.MaxValue && maxCell == int.MinValue)
-        {
-            minCell = 0;
-            maxCell = 0;
-        }
+		// Convert the SVG content to an image and save it
+		await SaveSvgAsImageAsync(svgContent, fileName);
 
-        minTouch = 0;
-        maxTouch = numTouches;
+		await DisplayAlert("Download Complete", $"The image has been saved to {fileName}.", "OK");
+	}
+	public async Task SaveSvgAsImageAsync(string svgContent, string filename)
+	{
+		// Parse the SVG content
+		var svg = new SKSvg();
+		svg.FromSvg(svgContent);
 
-        if (isHorizontal)
-        {
-            int cellRangeSpan = activeCellsColumn.Max(col => col.Max()) + 1 - minCell;
-            chartWidth = (cellRangeSpan * (cellWidth + cellPadding)) + chartPadding + 50;
-            chartHeight = (numTouches * (cellHeight + cellPadding)) + chartPadding + 200;
-        }
-        else
-        {
-            int cellRangeSpan = activeCellsColumn.Max(col => col.Max()) + 1 - minCell;
-            chartHeight = (cellRangeSpan * (cellHeight + cellPadding)) + chartPadding + 50;
-            chartWidth = (numTouches * (cellWidth + cellPadding)) + chartPadding + 200;
-        }
-    }
+		// Create a bitmap to render the SVG onto
+		var bitmap = new SKBitmap((int)svg.Picture.CullRect.Width, (int)svg.Picture.CullRect.Height);
+		using var canvas = new SKCanvas(bitmap);
+		canvas.Clear(SKColors.White);
+		canvas.DrawPicture(svg.Picture);
+		canvas.Flush();
 
-    private IEnumerable<(string label, int pos)> GenerateAxisLabels(int min, int max, bool isVertical)
-    {
-        var labels = new List<(string label, int pos)>();
-        int range = max - min;
+		// Encode the bitmap as a PNG
+		using var image = SKImage.FromBitmap(bitmap);
+		using var data = image.Encode(SKEncodedImageFormat.Png, 80);
 
-        int step = Math.Max(1, range / 10);
+		// Get the save path
+		string folderPath = FileSystem.CacheDirectory;
+		string filePath = Path.Combine(folderPath, filename);
 
-        string label;
-        int pos;
+		// Write the image data to a file
+		using var stream = File.OpenWrite(filePath);
+		data.SaveTo(stream);
 
-        for (int i = min; i <= max; i += step)
-        {
-            label = i.ToString();
+		await NotifyUser(filePath);
 
-            if (isVertical)
-            {
-                pos = Convert.ToInt32((float)(i - min) * (cellHeight + (cellPadding))) + 8;
-            }
-            else
-            {
-                pos = Convert.ToInt32((float)(i - min) * (cellWidth + (cellPadding))) + 20;
-            }
+	}
 
-            labels.Add((label, pos));
-        }
+	public async Task DisplayAlert(string title, string message, string cancel)
+	{
+		if (Application.Current?.MainPage is Page page)
+		{
+			await page.DisplayAlert(title, message, cancel);
+		}
+	}
+	public async Task NotifyUser(string filePath)
+	{
+		if (Application.Current?.MainPage is Page page)
+		{
+			// Construct the message
+			string message = $"The image has been successfully saved to:\n{filePath}";
 
-        if (isVertical)
-        {
-            label = max.ToString();
-            pos = Convert.ToInt32((float)(max - min) * (cellHeight + (cellPadding))) + 8;
-            labels.Add((label, pos));
-        }
-        else
-        {
-            label = max.ToString();
-            pos = Convert.ToInt32((float)(max - min) * (cellWidth + (cellPadding))) + 20;
-            labels.Add((label, pos));
-        }
+			// Display an alert dialog to the user
+			await page.DisplayAlert("Download Complete", message, "OK");
+		}
+	}
 
-        return labels;
-    }
+	#endregion
 
-    private IEnumerable<(string label, int pos)> GenerateAxisLabelsVertical(int min, int max, bool isVertical)
-    {
-        var labels = new List<(string label, int pos)>();
-        int range = max - min;
 
-        // Dynamically adjust the label density based on the orientation and dimensions.
-        int step = Math.Max(1, range / 10);
+	private void HandleFileSelected(InputFileChangeEventArgs e)
+	{
+		var file = e.File;
+		if (file != null)
+		{
+			heatmapInputModel.CsvFile = file;
+		}
+	}
 
-        string label;
-        int pos;
+	private string GetCellColor(int rowIndex) => rowIndex == highlightTouch ? "red" : "lightblue";
 
-        for (int i = min; i <= max; i += step)
-        {
-            label = i.ToString();
+	#region Dynamic calculations for chart
 
-            if (isVertical)
-            {
-                pos = Convert.ToInt32((float)(i - min) * (cellHeight + (cellPadding))) + 8;
-                //pos = Convert.ToInt32((((float)(i - min)) * cellHeight + (2 * cellPadding)));
-            }
-            else
-            {
-                pos = Convert.ToInt32((float)(i - min) * (cellWidth + (cellPadding))) + 20;
-                //pos = Convert.ToInt32(((float)(i - min) / range) * cellWidth) + (2 * cellPadding);
-            }
+	//Dynamically calculating chart dimention based on data provided
+	private void CalculateChartDimensions()
+	{
+		minCell = int.MaxValue;
+		maxCell = int.MinValue;
 
-            labels.Add((label, pos));
-        }
+		foreach (var column in activeCellsColumn)
+		{
+			if (column.Any())
+			{
+				int currentMin = column.Min();
+				int currentMax = column.Max();
 
-        //add max
-        if (isVertical)
-        {
-            label = max.ToString();
-            pos = Convert.ToInt32((float)(max - min) * (cellHeight + (cellPadding))) + 8;
-            labels.Add((label, pos));
-        }
-        else
-        {
-            label = max.ToString();
-            pos = Convert.ToInt32((float)(max - min) * (cellWidth + (cellPadding))) + 20;
-            labels.Add((label, pos));
-        }
+				if (currentMin < minCell)
+					minCell = currentMin;
+				if (currentMax > maxCell)
+					maxCell = currentMax;
+			}
+		}
 
-        return labels;
-    }
+		if (minCell == int.MaxValue && maxCell == int.MinValue)
+		{
+			minCell = 0;
+			maxCell = 0;
+		}
+
+		minTouch = 0;
+		maxTouch = numTouches;
+
+		if (isHorizontal)
+		{
+			int cellRangeSpan = activeCellsColumn.Max(col => col.Max()) + 1 - minCell;
+			chartWidth = (cellRangeSpan * (cellWidth - 2)) + chartPadding + 200;
+			chartHeight = (numTouches * (cellHeight + cellPadding)) + chartPadding + 50;
+		}
+		else
+		{
+			int cellRangeSpan = activeCellsColumn.Max(col => col.Max()) + 1 - minCell;
+			chartHeight = (cellRangeSpan * (cellHeight - 2)) + chartPadding + 50;
+			chartWidth = (numTouches * (cellWidth + cellPadding)) + chartPadding + 200;
+		}
+	}
+
+	//Dynamically generate labels for axis when working with horizontal chart
+	private IEnumerable<(string label, int pos)> GenerateAxisLabels(int min, int max, bool isVertical)
+	{
+		var labels = new List<(string label, int pos)>();
+		if (min > 0 && min < 10)
+		{
+			min = 0;
+		}
+		int range = max - min;
+
+		// Determine the magnitude of the range to set an appropriate step value.
+		int magnitude = (int)Math.Pow(10, (int)Math.Log10(range) - 1);
+		int step = (range / magnitude < 5) ? magnitude : magnitude * 5;
+
+		string label;
+		int pos;
+
+		// Generate labels based on the calculated step value.
+		for (int i = min; i <= max; i += step)
+		{
+			label = i.ToString();
+
+			if (isVertical)
+			{
+				// Adjust position calculation for vertical orientation
+				pos = Convert.ToInt32(((float)(i - min) * (cellHeight - 2)));
+			}
+			else
+			{
+				// Adjust position calculation for horizontal orientation
+				pos = Convert.ToInt32(((float)(i - min) * ((cellWidth - 1) + cellPadding)) + chartPadding);
+			}
+
+			labels.Add((label, pos));
+		}
+
+		// Ensure the last label is always added at the end of the axis.
+		if (!labels.Any(l => l.label == max.ToString()))
+		{
+			if (isVertical)
+			{
+				pos = Convert.ToInt32(((float)(max - min) * (cellHeight - 2)));
+				labels.Add((max.ToString(), pos));
+			}
+			else
+			{
+				pos = Convert.ToInt32(((float)(max - min) * ((cellWidth - 1) + cellPadding)) + chartPadding);
+				labels.Add((max.ToString(), pos));
+			}
+
+			return labels;
+		}
+		return labels;
+	}
+
+	//Dynamically generate labels for axis when working with vertical chart
+	private IEnumerable<(string label, int pos)> GenerateAxisLabelsVertical(int min, int max, bool isVertical)
+	{
+		var labels = new List<(string label, int pos)>();
+		if (min > 0 && min < 10)
+		{
+			min = 0;
+		}
+		int range = max - min;
+
+		// Determine the magnitude of the range to set an appropriate step value.
+		int magnitude = (int)Math.Pow(10, (int)Math.Log10(range) - 1);
+		int step = (range / magnitude < 5) ? magnitude : magnitude * 5;
+
+		string label;
+		int pos;
+
+		// Generate labels based on the calculated step value.
+		for (int i = min; i <= max; i += step)
+		{
+			label = i.ToString();
+
+			if (isVertical)
+			{
+				pos = Convert.ToInt32(((float)(i - min) * ((cellHeight - 1) + cellPadding)) + chartPadding) - 12;
+			}
+			else
+			{
+				pos = Convert.ToInt32(((float)(i - min) * (cellWidth - 2))) + 100;
+			}
+
+			labels.Add((label, pos));
+		}
+
+		// Ensure the last label is always added at the end of the axis.
+		if (!labels.Any(l => l.label == max.ToString()))
+		{
+			if (isVertical)
+			{
+				pos = Convert.ToInt32(((float)(max - min) * ((cellHeight - 1) + cellPadding)) + chartPadding) - 12;
+				labels.Add((max.ToString(), pos));
+			}
+			else
+			{
+				pos = Convert.ToInt32(((float)(max - min) * (cellWidth - 2))) + 120;
+				labels.Add((max.ToString(), pos));
+			}
+
+			return labels;
+		}
+		return labels;
+	}
+	#endregion
 }
 
 <script>
     function getSvgContent() {
         var svg = document.getElementById('heatmapSvg');
         return svg.outerHTML;
-    }
-
-    function downloadFile(fileName) {
-        var content = getSvgContent();
-        var blob = new Blob([content], { type: 'image/svg+xml;charset=utf-8' });
-        var url = URL.createObjectURL(blob);
-
-        var downloadLink = document.createElement("a");
-        downloadLink.href = url;
-        downloadLink.download = fileName;
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
-        URL.revokeObjectURL(url);
-    }
+	}
 </script>
