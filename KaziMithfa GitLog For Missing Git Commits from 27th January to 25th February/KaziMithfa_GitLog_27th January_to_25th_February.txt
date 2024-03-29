@@ -1,0 +1,40 @@
+commit 7966eb31d4b825c2a1e62d5f2ed80b39a68bc90b (HEAD -> KaziMithfa, origin/KaziMithfa)
+Author: KaziMithfa <kazimithfa99@gmail.com>
+Date:   Sun Feb 25 15:07:24 2024 +0100
+
+    Contact List added
+
+commit bc11c27d15082645f4028f7d49af6c51a928bd4b
+Author: KaziMithfa <kazimithfa99@gmail.com>
+Date:   Sat Feb 17 23:40:32 2024 +0100
+
+    Implementation of the button click event handler completed
+
+commit 56a0bad771a5b072c2362e93638bbe47abe9fcf2
+Author: KaziMithfa <kazimithfa99@gmail.com>
+Date:   Fri Feb 9 15:03:20 2024 +0100
+
+    Click Event Handler is created for two buttons
+
+commit 4394013835e5db8435525ef76cc91ed2871cc95d
+Author: KaziMithfa <kazimithfa99@gmail.com>
+Date:   Fri Feb 2 23:38:03 2024 +0100
+
+    Three pages has been design
+
+commit 247fb8bf647625b858b1d039ab1cbe9406c8823b
+Author: KaziMithfa <kazimithfa99@gmail.com>
+Date:   Sat Jan 27 11:45:23 2024 +0100
+
+    My first Hello World Project with MAUI
+
+commit 9ab767eb038bf0022a2e9a4742dbada2d1f8ae81 (origin/main, main)
+Author: KaziMithfa <kazimithfa99@gmail.com>
+Date:   Sat Jan 27 11:00:00 2024 +0100
+
+    first commit of Project
+~
+~
+~
+~
+(END)

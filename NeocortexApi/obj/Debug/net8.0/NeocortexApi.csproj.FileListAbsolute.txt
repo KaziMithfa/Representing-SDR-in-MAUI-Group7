@@ -1,0 +1,11 @@
+D:\SDR_MAUI\MauiApp1\NeocortexApi\bin\Debug\net8.0\NeocortexApi.deps.json
+D:\SDR_MAUI\MauiApp1\NeocortexApi\bin\Debug\net8.0\NeocortexApi.dll
+D:\SDR_MAUI\MauiApp1\NeocortexApi\bin\Debug\net8.0\NeocortexApi.pdb
+D:\SDR_MAUI\MauiApp1\NeocortexApi\obj\Debug\net8.0\NeocortexApi.GeneratedMSBuildEditorConfig.editorconfig
+D:\SDR_MAUI\MauiApp1\NeocortexApi\obj\Debug\net8.0\NeocortexApi.AssemblyInfoInputs.cache
+D:\SDR_MAUI\MauiApp1\NeocortexApi\obj\Debug\net8.0\NeocortexApi.AssemblyInfo.cs
+D:\SDR_MAUI\MauiApp1\NeocortexApi\obj\Debug\net8.0\NeocortexApi.csproj.CoreCompileInputs.cache
+D:\SDR_MAUI\MauiApp1\NeocortexApi\obj\Debug\net8.0\NeocortexApi.dll
+D:\SDR_MAUI\MauiApp1\NeocortexApi\obj\Debug\net8.0\refint\NeocortexApi.dll
+D:\SDR_MAUI\MauiApp1\NeocortexApi\obj\Debug\net8.0\NeocortexApi.pdb
+D:\SDR_MAUI\MauiApp1\NeocortexApi\obj\Debug\net8.0\ref\NeocortexApi.dll
