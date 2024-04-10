@@ -402,7 +402,16 @@
 
 		// Determine the magnitude of the range to set an appropriate step value.
 		int magnitude = (int)Math.Pow(10, (int)Math.Log10(range) - 1);
-		int step = (range / magnitude < 5) ? magnitude : magnitude * 5;
+
+		int step;
+
+		try
+		{
+			step = (range / magnitude < 5) ? magnitude : magnitude * 5;
+		}
+		catch(Exception ex){
+			step = 5;
+		}
 
 		string label;
 		int pos;
@@ -457,7 +466,15 @@
 
 		// Determine the magnitude of the range to set an appropriate step value.
 		int magnitude = (int)Math.Pow(10, (int)Math.Log10(range) - 1);
-		int step = (range / magnitude < 5) ? magnitude : magnitude * 5;
+		int step;
+
+		try
+		{
+			step = (range / magnitude < 5) ? magnitude : magnitude * 5;
+		}
+		catch(Exception ex){
+			step = 5;
+		}
 
 		string label;
 		int pos;
